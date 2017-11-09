@@ -1,4 +1,9 @@
+/*
+ * from https://github.com/qcdong2016/PlistDumper
+ * 
+ */
 package main
+
 
 import (
 	"fmt"
@@ -139,4 +144,6 @@ func main() {
 		draw.Draw(dst, box, sub, image.Point{0, 0}, draw.Src)
 		SaveImage(path.Join(basename, k), dst)
 	}
+
+    fmt.Println("Please star https://github.com/qcdong2016/PlistDumper")
 }
