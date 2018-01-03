@@ -1,9 +1,8 @@
 /*
  * from https://github.com/qcdong2016/PlistDumper
- * 
+ *
  */
 package main
-
 
 import (
 	"fmt"
@@ -61,12 +60,12 @@ func intArr(str string) []int {
 
 	ret := make([]int, len(sA))
 	for i, v := range sA {
-		value, err := strconv.Atoi(v)
+		value, err := strconv.ParseFloat(v, 32)
 		if err != nil {
 			panic(err)
 		}
 
-		ret[i] = value
+		ret[i] = int(value)
 	}
 
 	return ret
@@ -93,8 +92,8 @@ func RotateImage(src image.Image) image.Image {
 	return dst
 }
 
-func main() {
-	plistFile := os.Args[1]
+func dumpPlist(plistFile string) {
+	fmt.Println(">>", plistFile)
 	data, _ := ioutil.ReadFile(plistFile)
 
 	pack := ImagePack{}
@@ -144,6 +143,25 @@ func main() {
 		draw.Draw(dst, box, sub, image.Point{0, 0}, draw.Src)
 		SaveImage(path.Join(basename, k), dst)
 	}
+}
 
-    fmt.Println("Please star https://github.com/qcdong2016/PlistDumper")
+func main() {
+	if len(os.Args) == 1 {
+
+		filepath.Walk("./", func(fpath string, f os.FileInfo, err error) error {
+			if f == nil || f.IsDir() {
+				return nil
+			}
+
+			ext := path.Ext(fpath)
+			if ext == ".plist" {
+				dumpPlist(fpath)
+			}
+
+			return nil
+		})
+	} else {
+		dumpPlist(os.Args[1])
+	}
+	fmt.Println("https://github.com/qcdong2016/PlistDumper")
 }
