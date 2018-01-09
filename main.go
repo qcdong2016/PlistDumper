@@ -30,6 +30,7 @@ func LoadImage(path string) (img image.Image, err error) {
 }
 
 func SaveImage(path string, img image.Image) (err error) {
+	os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	imgfile, err := os.Create(path)
 	defer imgfile.Close()
 	return png.Encode(imgfile, img)
