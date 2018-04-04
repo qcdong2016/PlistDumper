@@ -21,7 +21,7 @@ $ PlistDumper [format] [plistfile]
 * `format`: `plist` 文件的格式，可选格式有：`cocos2dx`, `std`。
 * `plistfile`：`plist` 文件名，例如：`abc.plist`。
 
-`范例`：
+### 范例
 
 ```
 $ PlistDumper abc.plist
@@ -29,7 +29,7 @@ $ PlistDumper cocos2dx abc.plist
 $ PlistDumper std abc.plist
 ```
 
-`依赖库`：
+### 依赖库
 
 安装 `go-plist` 库：
 
@@ -56,7 +56,7 @@ Developed with `golang`, and support most popular operating systems.
 * `format`: `plist` file format, options include：`cocos2dx`, `std`.
 * `plistfile`：`plist` file name, example: `abc.plist`.
 
-`Examples`:
+### Examples
 
 ```
     PlistDumper abc.plist
@@ -64,7 +64,7 @@ Developed with `golang`, and support most popular operating systems.
     PlistDumper std abc.plist
 ```
 
-`Dependent library`:
+### Dependent library
 
 Install `go-plist` library：
 
