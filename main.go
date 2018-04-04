@@ -36,7 +36,7 @@ func SaveImage(path string, img image.Image) (err error) {
 	return png.Encode(imgfile, img)
 }
 
-type ImageInfo struct {
+type ImageInfoStd struct {
 	Rotated         bool   `plist:"rotated"`
 	Frame           string `plist:"frame"`
 	Offset          string `plist:"offset"`
@@ -44,29 +44,77 @@ type ImageInfo struct {
 	SourceSize      string `plist:"sourceSize"`
 }
 
-type Meta struct {
+type MetaStd struct {
 	Texture string `plist:"textureFileName"`
 }
 
-type ImagePack struct {
-	Frames map[string]*ImageInfo `plist:"frames"`
-	Meta   *Meta                 `plist:"metadata"`
+type ImagePackStd struct {
+	Frames map[string]*ImageInfoStd `plist:"frames"`
+	Meta   *MetaStd                 `plist:"metadata"`
+}
+
+type ImageInfoCocos2dx struct {
+	Aliases      []interface{} `plist:"aliases"`
+	SpriteOffset string        `plist:"spriteOffset"`
+	SpriteSize   string        `plist:"spriteSize"`
+	SourceSize   string        `plist:"spriteSourceSize"`
+	TextureRect  string        `plist:"textureRect"`
+	Rotated      bool          `plist:"textureRotated"`
+}
+
+type MetaCocos2dx struct {
+	Format      int    `plist:"format"`
+	RealTexture string `plist:"realTextureFileName"`
+	Size        string `plist:"size"`
+	SmartUpdate string `plist:"smartupdate"`
+	Texture     string `plist:"textureFileName"`
+}
+
+type ImagePackCocos2dx struct {
+	Frames map[string]*ImageInfoCocos2dx `plist:"frames"`
+	Meta   *MetaCocos2dx                 `plist:"metadata"`
+}
+
+func IsEmpty(str string) bool {
+	if str == "" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func intArr(str string) []int {
-	s := strings.Replace(str, "{", "", -1)
-	s = strings.Replace(s, "}", "", -1)
+	ret := make([]int, 0)
+	if !IsEmpty(str) {
+		s := strings.Replace(str, "{", "", -1)
+		s = strings.Replace(s, "}", "", -1)
 
-	sA := strings.Split(s, ",")
+		sA := strings.Split(s, ",")
 
-	ret := make([]int, len(sA))
-	for i, v := range sA {
-		value, err := strconv.ParseFloat(v, 32)
-		if err != nil {
-			panic(err)
+		ret = make([]int, len(sA))
+		for i, v := range sA {
+			value, err := strconv.ParseFloat(v, 32)
+			if err != nil {
+				value, err := strconv.ParseInt(v, 10, 32)
+				if err != nil {
+					panic(err)
+				}
+				ret[i] = int(value)
+			} else {
+				ret[i] = int(value)
+			}
 		}
-
-		ret[i] = int(value)
 	}
 
 	return ret
@@ -93,11 +141,11 @@ func RotateImage(src image.Image) image.Image {
 	return dst
 }
 
-func dumpPlist(plistFile string) {
-	fmt.Println(">>", plistFile)
+func dumpPlistCocos2dx(plistFile string) {
+	fmt.Println(">> ", plistFile)
 	data, _ := ioutil.ReadFile(plistFile)
 
-	pack := ImagePack{}
+	pack := ImagePackCocos2dx{}
 	_, err := plist.Unmarshal(data, &pack)
 	if err != nil {
 		panic(err)
@@ -110,45 +158,152 @@ func dumpPlist(plistFile string) {
 
 	basename := filepath.Base(plistFile) + ".dir"
 
-	err = os.Mkdir(basename, os.ModePerm)
+	isExists, err := PathExists(basename)
+	if err != nil {
+		panic(err)
+	}
+	if !isExists {
+		err = os.Mkdir(basename, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	for key, value := range pack.Frames {
+		fmt.Println(key)
+
+		s := intArr(value.TextureRect)
+		var subImage image.Image
+		x, y := s[0], s[1]
+		width, height := s[2], s[3]
+
+		if value.Rotated {
+			subImage = SubImage(bigImage, x, y, height, width)
+			subImage = RotateImage(subImage)
+		} else {
+			subImage = SubImage(bigImage, x, y, width, height)
+		}
+
+		spriteOffset := intArr(value.SpriteOffset)
+		spriteOffsetX, spriteOffsetY := spriteOffset[0], spriteOffset[1]
+
+		spriteSize := intArr(value.SpriteSize)
+		spriteWidth, spriteHeight := spriteSize[0], spriteSize[1]
+
+		var imgRect image.Rectangle
+		imgRect = image.Rect((spriteWidth-width)/2+spriteOffsetX, (spriteHeight-height)/2+spriteOffsetY,
+			(spriteWidth-width)/2+spriteOffsetX+width, (spriteHeight-height)/2+spriteOffsetY+height)
+		dest := image.NewRGBA(image.Rect(0, 0, spriteWidth, spriteHeight))
+
+		draw.Draw(dest, imgRect, subImage, image.Point{0, 0}, draw.Src)
+
+		SaveImage(path.Join(basename, key), dest)
+	}
+}
+
+func dumpPlistStd(plistFile string) {
+	fmt.Println(">> ", plistFile)
+	data, _ := ioutil.ReadFile(plistFile)
+
+	pack := ImagePackStd{}
+	_, err := plist.Unmarshal(data, &pack)
 	if err != nil {
 		panic(err)
 	}
 
-	for k, v := range pack.Frames {
-		fmt.Println(k)
+	bigImage, err := LoadImage(pack.Meta.Texture)
+	if err != nil {
+		panic(err)
+	}
 
-		s := intArr(v.Frame)
-		var sub image.Image
-		if v.Rotated {
-			s[3], s[2] = s[2], s[3]
+	basename := filepath.Base(plistFile) + ".dir"
+
+	isExists, err := PathExists(basename)
+	if err != nil {
+		panic(err)
+	}
+	if !isExists {
+		err = os.Mkdir(basename, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	for key, value := range pack.Frames {
+		fmt.Println(key)
+
+		s := intArr(value.Frame)
+		var subImage image.Image
+		x, y := s[0], s[1]
+		width, height := s[2], s[3]
+
+		if value.Rotated {
+			subImage = SubImage(bigImage, x, y, height, width)
+			subImage = RotateImage(subImage)
+		} else {
+			subImage = SubImage(bigImage, x, y, width, height)
 		}
 
-		w, h := s[2], s[3]
+		spriteOffset := intArr(value.Offset)
+		spriteOffsetX, spriteOffsetY := spriteOffset[0], spriteOffset[1]
 
-		sub = SubImage(bigImage, s[0], s[1], w, h)
+		spriteSize := intArr(value.SourceSize)
+		spriteWidth, spriteHeight := spriteSize[0], spriteSize[1]
 
-		if v.Rotated {
-			w, h = h, w
-			sub = RotateImage(sub)
-		}
+		var imgRect image.Rectangle
+		imgRect = image.Rect((spriteWidth-width)/2+spriteOffsetX, (spriteHeight-height)/2+spriteOffsetY,
+			(spriteWidth-width)/2+spriteOffsetX+width, (spriteHeight-height)/2+spriteOffsetY+height)
+		dest := image.NewRGBA(image.Rect(0, 0, spriteWidth, spriteHeight))
 
-		ss := intArr(v.SourceSize)
+		draw.Draw(dest, imgRect, subImage, image.Point{0, 0}, draw.Src)
 
-		of := intArr(v.Offset)
-		x, y := of[0], of[1]
-
-		var box image.Rectangle
-		box = image.Rect((ss[0]-w)/2+x, (ss[1]-h)/2-y, (ss[0]+w)/2+x, (ss[1]+h)/2-y)
-		dst := image.NewRGBA(image.Rect(0, 0, ss[0], ss[1]))
-		draw.Draw(dst, box, sub, image.Point{0, 0}, draw.Src)
-		SaveImage(path.Join(basename, k), dst)
+		SaveImage(path.Join(basename, key), dest)
 	}
 }
 
-func main() {
-	if len(os.Args) == 1 {
+func dumpPlist(format string, fpath string) {
+	if format == "std" {
+		// "std"
+		dumpPlistStd(fpath)
+	} else {
+		// "cocos2dx"
+		dumpPlistCocos2dx(fpath)
+	}
+}
 
+func isValidFormat(plistFormat string) bool {
+	if plistFormat == "std" {
+		// "std"
+		return true
+	} else if plistFormat == "cocos2dx" {
+		// "cocos2dx"
+		return true
+	} else {
+		// unknown
+		return false
+	}
+}
+
+func printUsage(appName string) {
+	fmt.Printf("\n")
+	fmt.Printf("Usage:\n\n")
+	fmt.Printf("  %s [cocos2dx] [plistfile]    # dump a cocos2dx plist file\n\n", appName)
+
+	fmt.Printf("  %s                           # dump all cocos2dx plist file\n", appName)
+	fmt.Printf("  %s abc.plist                 # dump a cocos2dx plist file\n\n", appName)
+
+	fmt.Printf("  %s cocos2dx                  # dump all cocos2dx plist file\n", appName)
+	fmt.Printf("  %s std                       # dump all standard plist file\n\n", appName)
+
+	fmt.Printf("  %s cocos2dx abc.plist        # dump a cocos2dx plist file\n", appName)
+	fmt.Printf("  %s std abc.plist             # dump a standard plist file\n\n", appName)
+}
+
+func main() {
+	// Default plist file format
+	format := "cocos2dx"
+
+	if len(os.Args) == 1 {
 		filepath.Walk("./", func(fpath string, f os.FileInfo, err error) error {
 			if f == nil || f.IsDir() {
 				return nil
@@ -156,13 +311,51 @@ func main() {
 
 			ext := path.Ext(fpath)
 			if ext == ".plist" {
-				dumpPlist(fpath)
+				dumpPlist(format, fpath)
 			}
 
 			return nil
 		})
+	} else if len(os.Args) == 2 {
+		validFormat := isValidFormat(os.Args[1])
+		if !validFormat {
+			fpath := os.Args[1]
+
+			ext := path.Ext(fpath)
+			if ext == ".plist" {
+				dumpPlist(format, fpath)
+			} else {
+				printUsage(os.Args[0])
+			}
+		} else {
+			format = os.Args[1]
+			filepath.Walk("./", func(fpath string, f os.FileInfo, err error) error {
+				if f == nil || f.IsDir() {
+					return nil
+				}
+
+				ext := path.Ext(fpath)
+				if ext == ".plist" {
+					dumpPlist(format, fpath)
+				}
+
+				return nil
+			})
+		}
+	} else if len(os.Args) == 3 {
+		format = os.Args[1]
+		fpath := os.Args[2]
+
+		ext := path.Ext(fpath)
+		if ext == ".plist" {
+			dumpPlist(format, fpath)
+		} else {
+			printUsage(os.Args[0])
+		}
 	} else {
-		dumpPlist(os.Args[1])
+		printUsage(os.Args[0])
 	}
-	fmt.Println("https://github.com/qcdong2016/PlistDumper")
+
+	fmt.Printf("\n")
+	fmt.Printf("https://github.com/shines77/PlistDumper [Original author qcdong2016]\n")
 }
