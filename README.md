@@ -2,6 +2,10 @@
 PlistDumper
 --------------
 
+Original author: [qcdong2016](https://github.com/qcdong2016/PlistDumper)
+
+Modified by: [shines77](https://github.com/shines77/PlistDumper)
+
 # 中文 (Chinese)
 
 从 `TexturePacker` 的 `plist` 文件中导出 `sprite` 图片，类似于 `TextureUnpacker`。
@@ -31,7 +35,3 @@ Developed with `golang`, and support most popular operating systems.
 # preview / 预览
 
 ![preview](./preview.jpg)
-
-Original author: [qcdong2016](https://github.com/qcdong2016/PlistDumper)
-
-Modified by: [shines77](https://github.com/shines77/PlistDumper)
