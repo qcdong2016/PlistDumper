@@ -1,3 +1,3 @@
 
-PlistDumper.exe cocos2dx card.plist
+PlistDumper.exe cocos2dx
 pause
