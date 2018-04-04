@@ -357,5 +357,5 @@ func main() {
 	}
 
 	fmt.Printf("\n")
-	fmt.Printf("https://github.com/shines77/PlistDumper [Original author qcdong2016]\n")
+	fmt.Printf("https://github.com/qcdong2016/PlistDumper [Modified by shines77]\n")
 }
