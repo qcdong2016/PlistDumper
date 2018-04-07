@@ -19,6 +19,72 @@ import (
 	plist "github.com/DHowett/go-plist"
 )
 
+type Frame struct {
+	Rect image.Rectangle
+	Offset image.Point
+	OriginalSize image.Point
+	Rotated bool
+}
+
+type FrameV0 struct {
+	Height int `plist:"height"`
+	Width int `plist:"width"`
+	X int `plist:"x"`
+	Y int `plist:"y"`
+	OriginalWidth int `plist:"originalWidth"`
+	OriginalHeight int `plist:"originalHeight"`
+	OffsetX float32`plist:"offsetX"`
+	OffsetY float32 `plist:"offsetY"`
+}
+type PlistV0 struct {
+	Frames map[string]*FrameV0 `plist:"frames"`
+}
+
+type FrameV1 struct {
+	Frame           string `plist:"frame"`
+	Offset          string `plist:"offset"`
+	SourceSize      string `plist:"sourceSize"`
+}
+type PlistV1 struct {
+	Frames map[string]*FrameV1 `plist:"frames"`
+}
+
+type FrameV2 struct {
+	Rotated         bool   `plist:"rotated"`
+	Frame           string `plist:"frame"`
+	Offset          string `plist:"offset"`
+	SourceColorRect string `plist:"sourceColorRect"`
+	SourceSize      string `plist:"sourceSize"`
+}
+type PlistV2 struct {
+	Frames map[string]*FrameV2 `plist:"frames"`
+}
+
+type FrameV3 struct {
+	//Aliases      []interface{} `plist:"aliases"`
+	SpriteOffset string        `plist:"spriteOffset"`
+	SpriteSize   string        `plist:"spriteSize"`
+	SpriteSourceSize   string        `plist:"spriteSourceSize"`
+	TextureRect  string        `plist:"textureRect"`
+	TextureRotated      bool          `plist:"textureRotated"`
+}
+type PlistV3 struct {
+	Frames map[string]*FrameV3 `plist:"frames"`
+}
+
+type MetaData struct {
+	Format      int    `plist:"format"`
+	RealTexture string `plist:"realTextureFileName"`
+	Size        string `plist:"size"`
+	SmartUpdate string `plist:"smartupdate"`
+	Texture     string `plist:"textureFileName"`
+}
+
+type Version struct {
+	// Frames map[string]interface{} `plist:"frames"`
+	MetaData   *MetaData `plist:"metadata"`
+}
+
 func LoadImage(path string) (img image.Image, err error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -36,53 +102,6 @@ func SaveImage(path string, img image.Image) (err error) {
 	return png.Encode(imgfile, img)
 }
 
-type ImageInfoStd struct {
-	Rotated         bool   `plist:"rotated"`
-	Frame           string `plist:"frame"`
-	Offset          string `plist:"offset"`
-	SourceColorRect string `plist:"sourceColorRect"`
-	SourceSize      string `plist:"sourceSize"`
-}
-
-type MetaStd struct {
-	Texture string `plist:"textureFileName"`
-}
-
-type ImagePackStd struct {
-	Frames map[string]*ImageInfoStd `plist:"frames"`
-	Meta   *MetaStd                 `plist:"metadata"`
-}
-
-type ImageInfoCocos2dx struct {
-	Aliases      []interface{} `plist:"aliases"`
-	SpriteOffset string        `plist:"spriteOffset"`
-	SpriteSize   string        `plist:"spriteSize"`
-	SourceSize   string        `plist:"spriteSourceSize"`
-	TextureRect  string        `plist:"textureRect"`
-	Rotated      bool          `plist:"textureRotated"`
-}
-
-type MetaCocos2dx struct {
-	Format      int    `plist:"format"`
-	RealTexture string `plist:"realTextureFileName"`
-	Size        string `plist:"size"`
-	SmartUpdate string `plist:"smartupdate"`
-	Texture     string `plist:"textureFileName"`
-}
-
-type ImagePackCocos2dx struct {
-	Frames map[string]*ImageInfoCocos2dx `plist:"frames"`
-	Meta   *MetaCocos2dx                 `plist:"metadata"`
-}
-
-func IsEmpty(str string) bool {
-	if str == "" {
-		return true
-	} else {
-		return false
-	}
-}
-
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -96,7 +115,6 @@ func PathExists(path string) (bool, error) {
 
 func intArr(str string) []int {
 	ret := make([]int, 0)
-	if !IsEmpty(str) {
 		s := strings.Replace(str, "{", "", -1)
 		s = strings.Replace(s, "}", "", -1)
 
@@ -115,145 +133,116 @@ func intArr(str string) []int {
 				ret[i] = int(value)
 			}
 		}
-	}
 
 	return ret
 }
 
-func SubImage(srcImage image.Image, x, y, w, h int) image.Image {
-	destRect := image.Rect(0, 0, w, h)
-	destIamge := image.NewRGBA(image.Rect(0, 0, w, h))
-	draw.Draw(destIamge, destRect, srcImage, image.Point{x, y}, draw.Src)
-	return destIamge
+func SubImage(src image.Image, x, y, w, h int) image.Image {
+	r := image.Rect(0, 0, x+w, y+h)
+	dst := image.NewRGBA(image.Rect(0, 0, w, h))
+	draw.Draw(dst, r, src, image.Point{x, y}, draw.Src)
+	return dst
 }
 
-func RotateImage(srcImage image.Image) image.Image {
-	width := srcImage.Bounds().Max.X
-	height := srcImage.Bounds().Max.Y
-	destIamge := image.NewRGBA(image.Rect(0, 0, height, width))
+func RotateImage(src image.Image) image.Image {
+	w := src.Bounds().Max.X
+	h := src.Bounds().Max.Y
+	dst := image.NewRGBA(image.Rect(0, 0, h, w))
 
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			destIamge.Set(y, (width-1)-x, srcImage.At(x, y))
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			dst.Set(y, w-x, src.At(x, y))
 		}
 	}
 
-	return destIamge
+	return dst
 }
 
-func dumpPlistCocos2dx(plistFile string) {
-	fmt.Println("")
+func dumpPlist(plistFile string) {
 	fmt.Println(">>", plistFile)
-	fmt.Println("")
 
 	data, _ := ioutil.ReadFile(plistFile)
 
-	pack := ImagePackCocos2dx{}
-	_, err := plist.Unmarshal(data, &pack)
+	version := Version{}
+	_, err := plist.Unmarshal(data, &version)
 	if err != nil {
 		panic(err)
 	}
 
-	textureImage, err := LoadImage(pack.Meta.Texture)
-	if err != nil {
-		panic(err)
-	}
-
-	basename := filepath.Base(plistFile) + ".dir"
-
-	isExists, err := PathExists(basename)
-	if err != nil {
-		panic(err)
-	}
-	if !isExists {
-		err = os.Mkdir(basename, os.ModePerm)
-		if err != nil {
+	frames := map[string]Frame{}
+	switch version.MetaData.Format{
+	case 0:
+		plistData := PlistV0{}
+		_, err = plist.Unmarshal(data, &plistData)
+			if err != nil {
 			panic(err)
 		}
-	}
 
-	for key, value := range pack.Frames {
-		fmt.Println(key)
-
-		textureRect := intArr(value.TextureRect)
-		textureLeft, textureTop := textureRect[0], textureRect[1]
-		textureWidth, textureHeight := textureRect[2], textureRect[3]
-
-		spriteOffset := intArr(value.SpriteOffset)
-		spriteOffsetX, spriteOffsetY := spriteOffset[0], spriteOffset[1]
-
-		spriteSize := intArr(value.SpriteSize)
-		spriteWidth, spriteHeight := spriteSize[0], spriteSize[1]
-
-		sourceSpriteSize := intArr(value.SourceSize)
-		sourceSpriteWidth, sourceSpriteHeight := sourceSpriteSize[0], sourceSpriteSize[1]
-
-		if textureWidth != spriteWidth || textureHeight != spriteHeight {
-			fmt.Printf("\n")
-			fmt.Printf("Error: TextureSize is not equal to SpriteSize!\n")
-			fmt.Printf("textureWidth = %d, textureHeight = %d\n", textureWidth, textureHeight)
-			fmt.Printf("spriteWidth  = %d, spriteHeight  = %d\n", spriteWidth, spriteHeight)
-			fmt.Printf("\n")
-		}
-
-		if sourceSpriteWidth < textureWidth || sourceSpriteHeight < textureHeight {
-			fmt.Printf("\n")
-			fmt.Printf("Error: SourceSpriteSize is smaller than TextureSize!\n")
-			fmt.Printf("textureWidth      = %d, textureHeight      = %d\n",
-				textureWidth, textureHeight)
-			fmt.Printf("sourceSpriteWidth = %d, sourceSpriteHeight = %d\n",
-				sourceSpriteWidth, sourceSpriteHeight)
-			fmt.Printf("\n")
-		}
-
-		var subImage image.Image
-		if value.Rotated {
-			subImage = SubImage(textureImage, textureLeft, textureTop, textureHeight, textureWidth)
-			subImage = RotateImage(subImage)
-		} else {
-			subImage = SubImage(textureImage, textureLeft, textureTop, textureWidth, textureHeight)
-		}
-
-		var destRect image.Rectangle
-		destRect = image.Rect(0-spriteOffsetX, 0-spriteOffsetY, 0-spriteOffsetX+spriteWidth, 0-spriteOffsetY+spriteHeight)
-		/*
-			if spriteOffsetX < 0 && spriteOffsetY < 0 {
-				destRect = image.Rect(sourceSpriteWidth+spriteOffsetX-spriteWidth, sourceSpriteHeight+spriteOffsetY-spriteHeight,
-					sourceSpriteWidth+spriteOffsetX, sourceSpriteHeight+spriteOffsetY)
-			} else if spriteOffsetX >= 0 && spriteOffsetY < 0 {
-				destRect = image.Rect(spriteOffsetX, sourceSpriteHeight+spriteOffsetY-spriteHeight, spriteOffsetX+spriteWidth, sourceSpriteHeight+spriteOffsetY)
-			} else if spriteOffsetX < 0 && spriteOffsetY >= 0 {
-				destRect = image.Rect(sourceSpriteWidth+spriteOffsetX-spriteWidth, spriteOffsetY, sourceSpriteWidth+spriteOffsetX, spriteOffsetY+spriteHeight)
-			} else {
-				destRect = image.Rect(spriteOffsetX, spriteOffsetY, spriteOffsetX+spriteWidth, spriteOffsetY+spriteHeight)
+		for k, v := range plistData.Frames {
+			frames[k] = Frame{
+				Rect: image.Rect(v.X, v.Y, v.X+v.Width, v.Y+v.Height),
+				OriginalSize: image.Point{v.OriginalWidth, v.OriginalHeight},
+				Offset: image.Point{int(v.OffsetX), int(v.OffsetY)},
+				Rotated:false ,
 			}
-		//*/
+		}
+	case 1:
 
-		// Create the destination sprite image [Output]
-		destImage := image.NewRGBA(image.Rect(0, 0, sourceSpriteWidth, sourceSpriteHeight))
+		plistData := PlistV1{}
+		_, err = plist.Unmarshal(data, &plistData)
+			if err != nil {
+			panic(err)
+		}
+		for k, v := range plistData.Frames {
+			f := intArr(v.Frame)
+			o := intArr(v.Offset)
+			s := intArr(v.SourceSize)
+			frames[k] = Frame {
+				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+				OriginalSize: image.Point{s[0], s[1]},
+				Offset: image.Point{o[0], o[1]},
+				Rotated: false,
+			}
+		}
+	case 2:
 
-		// Copy image to destination sprite image
-		draw.Draw(destImage, destRect, subImage, image.Point{0, 0}, draw.Src)
+		plistData := PlistV2{}
+		_, err = plist.Unmarshal(data, &plistData)
+		if err != nil {
+			panic(err)
+		}
+		for k, v := range plistData.Frames {
+			f := intArr(v.Frame)
+			o := intArr(v.Offset)
+			s := intArr(v.SourceSize)
+			frames[k] = Frame {
+				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+				OriginalSize: image.Point{s[0], s[1]},
+				Offset: image.Point{o[0], o[1]},
+				Rotated: v.Rotated,
+			}
+		}
+	case 3:
 
-		// Save the destination sprite image
-		SaveImage(path.Join(basename, key), destImage)
-	}
-}
+		plistData := PlistV3{}
+		_, err = plist.Unmarshal(data, &plistData)
+		if err != nil {
+			panic(err)
+		}
+		for k, v := range plistData.Frames {
+			f := intArr(v.TextureRect)
+			o := intArr(v.SpriteOffset)
+			s := intArr(v.SpriteSourceSize)
+			frames[k] = Frame {
+				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+				OriginalSize: image.Point{s[0], s[1]},
+				Offset: image.Point{o[0], o[1]},
+				Rotated: v.TextureRotated,
+			}
+		}
+	} 
 
-func dumpPlistStd(plistFile string) {
-	fmt.Println("")
-	fmt.Println(">>", plistFile)
-	fmt.Println("")
-
-	data, _ := ioutil.ReadFile(plistFile)
-
-	pack := ImagePackStd{}
-	_, err := plist.Unmarshal(data, &pack)
-	if err != nil {
-		panic(err)
-	}
-
-	textureImage, err := LoadImage(pack.Meta.Texture)
+	textureImage, err := LoadImage(filepath.Join(filepath.Dir(plistFile), version.MetaData.Texture))
 	if err != nil {
 		panic(err)
 	}
@@ -271,82 +260,37 @@ func dumpPlistStd(plistFile string) {
 		}
 	}
 
-	for key, value := range pack.Frames {
-		fmt.Println(key)
+	for k, v := range frames {
+		fmt.Println(k)
 
-		s := intArr(value.Frame)
 		var subImage image.Image
-		x, y := s[0], s[1]
-		width, height := s[2], s[3]
 
-		if value.Rotated {
-			subImage = SubImage(textureImage, x, y, height, width)
+		w, h := v.Rect.Size().X, v.Rect.Size().Y
+		ox,oy:= v.Offset.X, v.Offset.Y
+		ow,oh:=v.OriginalSize.X, v.OriginalSize.Y
+
+		if v.Rotated {
+			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, h, w)
 			subImage = RotateImage(subImage)
 		} else {
-			subImage = SubImage(textureImage, x, y, width, height)
+			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, w, h)
 		}
 
-		spriteOffset := intArr(value.Offset)
-		spriteOffsetX, spriteOffsetY := spriteOffset[0], spriteOffset[1]
-
-		spriteSize := intArr(value.SourceSize)
-		spriteWidth, spriteHeight := spriteSize[0], spriteSize[1]
 
 		var destRect image.Rectangle
-		destRect = image.Rect((spriteWidth-width)/2+spriteOffsetX, (spriteHeight-height)/2+spriteOffsetY,
-			(spriteWidth-width)/2+spriteOffsetX+width, (spriteHeight-height)/2+spriteOffsetY+height)
+		destRect = image.Rect((ow-w)/2+ox, (oh-h)/2+ox, (ow-w)/2+ox+w, (oh-h)/2+oy+h)
 
 		// Create the destination sprite image [Output]
-		destImage := image.NewRGBA(image.Rect(0, 0, spriteWidth, spriteHeight))
+		destImage := image.NewRGBA(image.Rect(0, 0, ow, oh))
 
 		// Copy image to destination sprite image
 		draw.Draw(destImage, destRect, subImage, image.Point{0, 0}, draw.Src)
 
-		SaveImage(path.Join(basename, key), destImage)
+		SaveImage(path.Join(basename, k), destImage)
 	}
-}
-
-func dumpPlist(format string, fpath string) {
-	if format == "std" {
-		// "std"
-		dumpPlistStd(fpath)
-	} else {
-		// "cocos2dx"
-		dumpPlistCocos2dx(fpath)
-	}
-}
-
-func isValidFormat(plistFormat string) bool {
-	if plistFormat == "std" {
-		// "std"
-		return true
-	} else if plistFormat == "cocos2dx" {
-		// "cocos2dx"
-		return true
-	} else {
-		// unknown
-		return false
-	}
-}
-
-func printUsage(appName string) {
-	fmt.Printf("\n")
-	fmt.Printf("Usage:\n\n")
-	fmt.Printf("  %s [cocos2dx] [plistfile]    # dump a cocos2dx plist file\n\n", appName)
-
-	fmt.Printf("  %s                           # dump all cocos2dx plist file\n", appName)
-	fmt.Printf("  %s abc.plist                 # dump a cocos2dx plist file\n\n", appName)
-
-	fmt.Printf("  %s cocos2dx                  # dump all cocos2dx plist file\n", appName)
-	fmt.Printf("  %s std                       # dump all standard plist file\n\n", appName)
-
-	fmt.Printf("  %s cocos2dx abc.plist        # dump a cocos2dx plist file\n", appName)
-	fmt.Printf("  %s std abc.plist             # dump a standard plist file\n\n", appName)
 }
 
 func main() {
-	// Default plist file format
-	format := "cocos2dx"
 
 	if len(os.Args) == 1 {
 		filepath.Walk("./", func(fpath string, f os.FileInfo, err error) error {
@@ -356,51 +300,20 @@ func main() {
 
 			ext := path.Ext(fpath)
 			if ext == ".plist" {
-				dumpPlist(format, fpath)
+				dumpPlist(fpath)
 			}
 
 			return nil
 		})
-	} else if len(os.Args) == 2 {
-		validFormat := isValidFormat(os.Args[1])
-		if !validFormat {
-			fpath := os.Args[1]
-
-			ext := path.Ext(fpath)
-			if ext == ".plist" {
-				dumpPlist(format, fpath)
-			} else {
-				printUsage(os.Args[0])
-			}
-		} else {
-			format = os.Args[1]
-			filepath.Walk("./", func(fpath string, f os.FileInfo, err error) error {
-				if f == nil || f.IsDir() {
-					return nil
-				}
-
-				ext := path.Ext(fpath)
-				if ext == ".plist" {
-					dumpPlist(format, fpath)
-				}
-
-				return nil
-			})
-		}
-	} else if len(os.Args) == 3 {
-		format = os.Args[1]
-		fpath := os.Args[2]
+	} else {
+		fpath := os.Args[1]
 
 		ext := path.Ext(fpath)
 		if ext == ".plist" {
-			dumpPlist(format, fpath)
-		} else {
-			printUsage(os.Args[0])
+			dumpPlist( fpath)
 		}
-	} else {
-		printUsage(os.Args[0])
 	}
 
 	fmt.Printf("\n")
-	fmt.Printf("https://github.com/qcdong2016/PlistDumper [Modified by shines77]\n")
+	fmt.Printf("https://github.com/qcdong2016/PlistDumper (Thanks for shines77)\n")
 }
