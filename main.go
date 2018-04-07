@@ -20,30 +20,30 @@ import (
 )
 
 type Frame struct {
-	Rect image.Rectangle
-	Offset image.Point
+	Rect         image.Rectangle
+	Offset       image.Point
 	OriginalSize image.Point
-	Rotated bool
+	Rotated      bool
 }
 
 type FrameV0 struct {
-	Height int `plist:"height"`
-	Width int `plist:"width"`
-	X int `plist:"x"`
-	Y int `plist:"y"`
-	OriginalWidth int `plist:"originalWidth"`
-	OriginalHeight int `plist:"originalHeight"`
-	OffsetX float32`plist:"offsetX"`
-	OffsetY float32 `plist:"offsetY"`
+	Height         int     `plist:"height"`
+	Width          int     `plist:"width"`
+	X              int     `plist:"x"`
+	Y              int     `plist:"y"`
+	OriginalWidth  int     `plist:"originalWidth"`
+	OriginalHeight int     `plist:"originalHeight"`
+	OffsetX        float32 `plist:"offsetX"`
+	OffsetY        float32 `plist:"offsetY"`
 }
 type PlistV0 struct {
 	Frames map[string]*FrameV0 `plist:"frames"`
 }
 
 type FrameV1 struct {
-	Frame           string `plist:"frame"`
-	Offset          string `plist:"offset"`
-	SourceSize      string `plist:"sourceSize"`
+	Frame      string `plist:"frame"`
+	Offset     string `plist:"offset"`
+	SourceSize string `plist:"sourceSize"`
 }
 type PlistV1 struct {
 	Frames map[string]*FrameV1 `plist:"frames"`
@@ -62,11 +62,11 @@ type PlistV2 struct {
 
 type FrameV3 struct {
 	//Aliases      []interface{} `plist:"aliases"`
-	SpriteOffset string        `plist:"spriteOffset"`
-	SpriteSize   string        `plist:"spriteSize"`
-	SpriteSourceSize   string        `plist:"spriteSourceSize"`
-	TextureRect  string        `plist:"textureRect"`
-	TextureRotated      bool          `plist:"textureRotated"`
+	SpriteOffset     string `plist:"spriteOffset"`
+	SpriteSize       string `plist:"spriteSize"`
+	SpriteSourceSize string `plist:"spriteSourceSize"`
+	TextureRect      string `plist:"textureRect"`
+	TextureRotated   bool   `plist:"textureRotated"`
 }
 type PlistV3 struct {
 	Frames map[string]*FrameV3 `plist:"frames"`
@@ -82,7 +82,7 @@ type MetaData struct {
 
 type Version struct {
 	// Frames map[string]interface{} `plist:"frames"`
-	MetaData   *MetaData `plist:"metadata"`
+	MetaData *MetaData `plist:"metadata"`
 }
 
 func LoadImage(path string) (img image.Image, err error) {
@@ -115,24 +115,24 @@ func PathExists(path string) (bool, error) {
 
 func intArr(str string) []int {
 	ret := make([]int, 0)
-		s := strings.Replace(str, "{", "", -1)
-		s = strings.Replace(s, "}", "", -1)
+	s := strings.Replace(str, "{", "", -1)
+	s = strings.Replace(s, "}", "", -1)
 
-		sA := strings.Split(s, ",")
+	sA := strings.Split(s, ",")
 
-		ret = make([]int, len(sA))
-		for i, v := range sA {
-			value, err := strconv.ParseFloat(v, 32)
+	ret = make([]int, len(sA))
+	for i, v := range sA {
+		value, err := strconv.ParseFloat(v, 32)
+		if err != nil {
+			value, err := strconv.ParseInt(v, 10, 32)
 			if err != nil {
-				value, err := strconv.ParseInt(v, 10, 32)
-				if err != nil {
-					panic(err)
-				}
-				ret[i] = int(value)
-			} else {
-				ret[i] = int(value)
+				panic(err)
 			}
+			ret[i] = int(value)
+		} else {
+			ret[i] = int(value)
 		}
+	}
 
 	return ret
 }
@@ -170,38 +170,38 @@ func dumpPlist(plistFile string) {
 	}
 
 	frames := map[string]Frame{}
-	switch version.MetaData.Format{
+	switch version.MetaData.Format {
 	case 0:
 		plistData := PlistV0{}
 		_, err = plist.Unmarshal(data, &plistData)
-			if err != nil {
+		if err != nil {
 			panic(err)
 		}
 
 		for k, v := range plistData.Frames {
 			frames[k] = Frame{
-				Rect: image.Rect(v.X, v.Y, v.X+v.Width, v.Y+v.Height),
+				Rect:         image.Rect(v.X, v.Y, v.X+v.Width, v.Y+v.Height),
 				OriginalSize: image.Point{v.OriginalWidth, v.OriginalHeight},
-				Offset: image.Point{int(v.OffsetX), int(v.OffsetY)},
-				Rotated:false ,
+				Offset:       image.Point{int(v.OffsetX), int(v.OffsetY)},
+				Rotated:      false,
 			}
 		}
 	case 1:
 
 		plistData := PlistV1{}
 		_, err = plist.Unmarshal(data, &plistData)
-			if err != nil {
+		if err != nil {
 			panic(err)
 		}
 		for k, v := range plistData.Frames {
 			f := intArr(v.Frame)
 			o := intArr(v.Offset)
 			s := intArr(v.SourceSize)
-			frames[k] = Frame {
-				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+			frames[k] = Frame{
+				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
-				Offset: image.Point{o[0], o[1]},
-				Rotated: false,
+				Offset:       image.Point{o[0], o[1]},
+				Rotated:      false,
 			}
 		}
 	case 2:
@@ -215,11 +215,11 @@ func dumpPlist(plistFile string) {
 			f := intArr(v.Frame)
 			o := intArr(v.Offset)
 			s := intArr(v.SourceSize)
-			frames[k] = Frame {
-				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+			frames[k] = Frame{
+				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
-				Offset: image.Point{o[0], o[1]},
-				Rotated: v.Rotated,
+				Offset:       image.Point{o[0], o[1]},
+				Rotated:      v.Rotated,
 			}
 		}
 	case 3:
@@ -233,14 +233,14 @@ func dumpPlist(plistFile string) {
 			f := intArr(v.TextureRect)
 			o := intArr(v.SpriteOffset)
 			s := intArr(v.SpriteSourceSize)
-			frames[k] = Frame {
-				Rect: image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
+			frames[k] = Frame{
+				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
-				Offset: image.Point{o[0], o[1]},
-				Rotated: v.TextureRotated,
+				Offset:       image.Point{o[0], o[1]},
+				Rotated:      v.TextureRotated,
 			}
 		}
-	} 
+	}
 
 	textureImage, err := LoadImage(filepath.Join(filepath.Dir(plistFile), version.MetaData.Texture))
 	if err != nil {
@@ -266,8 +266,8 @@ func dumpPlist(plistFile string) {
 		var subImage image.Image
 
 		w, h := v.Rect.Size().X, v.Rect.Size().Y
-		ox,oy:= v.Offset.X, v.Offset.Y
-		ow,oh:=v.OriginalSize.X, v.OriginalSize.Y
+		ox, oy := v.Offset.X, v.Offset.Y
+		ow, oh := v.OriginalSize.X, v.OriginalSize.Y
 
 		if v.Rotated {
 			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, h, w)
@@ -275,7 +275,6 @@ func dumpPlist(plistFile string) {
 		} else {
 			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, w, h)
 		}
-
 
 		var destRect image.Rectangle
 		destRect = image.Rect((ow-w)/2+ox, (oh-h)/2+ox, (ow-w)/2+ox+w, (oh-h)/2+oy+h)
@@ -310,7 +309,7 @@ func main() {
 
 		ext := path.Ext(fpath)
 		if ext == ".plist" {
-			dumpPlist( fpath)
+			dumpPlist(fpath)
 		}
 	}
 
