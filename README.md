@@ -2,7 +2,6 @@
 PlistDumper
 --------------
 
-Special thanks to: https://github.com/DHowett/go-plist
 
 # 中文 (Chinese)
 
