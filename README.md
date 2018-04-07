@@ -2,32 +2,20 @@
 PlistDumper
 --------------
 
-Original author: [qcdong2016](https://github.com/qcdong2016/PlistDumper) | Modified by: [shines77](https://github.com/shines77/PlistDumper)
-
 Special thanks to: https://github.com/DHowett/go-plist
 
 # 中文 (Chinese)
 
-从 `TexturePacker` 的 `plist` 文件中导出 `sprite` 图片，类似于 `TextureUnpacker`。
+从 `Zwoptex` 或者 `TexturePacker` 的 `plist` 文件中导出图片，还原图片真实大小。支持各种版本的plist文件。类似于 `TextureUnpacker`。
 
 采用 `golang` 开发，支持各种操作系统。
 
 ## 使用说明
 
 ```
-$ PlistDumper [format] [plistfile]
+$ PlistDumper [plistfile]
 ```
-
-* `format`: `plist` 文件的格式，可选格式有：`cocos2dx`, `std`。
-* `plistfile`：`plist` 文件名，例如：`abc.plist`。
-
-### 范例
-
-```
-$ PlistDumper abc.plist
-$ PlistDumper cocos2dx abc.plist
-$ PlistDumper std abc.plist
-```
+* 直接运行不穿参数，则解压文件夹中所有plist，包括子文件夹
 
 ### 依赖库
 
@@ -36,33 +24,20 @@ $ PlistDumper std abc.plist
 ```
 $ go get github.com/DHowett/go-plist
 ```
-或者
-```
-$ go get howett.net/plist
-```
 
 # English
 
-Export the `sprite` image from the `TexturePacker`'s  `plist` file, similar to `TextureUnpacker`.
+Export the image from the `TexturePacker` or `Zwoptex`'s  `plist` file, support all version of plist, similar to `TextureUnpacker`.
 
 Developed with `golang`, and support most popular operating systems.
 
 ## Usage
 
 ```
-    PlistDumper [format] [plistfile]
+    PlistDumper [plistfile]
 ```
 
-* `format`: `plist` file format, options include：`cocos2dx`, `std`.
-* `plistfile`：`plist` file name, example: `abc.plist`.
-
-### Examples
-
-```
-    PlistDumper abc.plist
-    PlistDumper cocos2dx abc.plist
-    PlistDumper std abc.plist
-```
+* if you don't give the plistfile, then will unpack all plist in the folder and subfolder.
 
 ### Dependent library
 
@@ -71,11 +46,11 @@ Install `go-plist` library：
 ```
 $ go get github.com/DHowett/go-plist
 ```
-Or
-```
-$ go get howett.net/plist
-```
 
 # preview / 预览
 
 ![preview](./preview.jpg)
+
+# Credits
+- qcdong2016
+- shines77
