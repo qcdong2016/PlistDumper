@@ -277,7 +277,7 @@ func dumpPlist(plistFile string) {
 		}
 
 		var destRect image.Rectangle
-		destRect = image.Rect((ow-w)/2+ox, (oh-h)/2+ox, (ow-w)/2+ox+w, (oh-h)/2+oy+h)
+		destRect = image.Rect((ow-w)/2+ox, (oh-h)/2+oy, (ow-w)/2+ox+w, (oh-h)/2+oy+h)
 
 		// Create the destination sprite image [Output]
 		destImage := image.NewRGBA(image.Rect(0, 0, ow, oh))
