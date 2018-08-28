@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gg"
 	"image"
 	"image/png"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fogleman/gg"
 	"github.com/nfnt/resize"
 	toml "github.com/pelletier/go-toml"
 )
