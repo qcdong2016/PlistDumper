@@ -1,4 +1,4 @@
-# gt（game develop tools）
+# gdt（game develop tools）
 游戏开发中需要的一些小工具。
 
 ## 列表
