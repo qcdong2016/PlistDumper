@@ -3,5 +3,5 @@
 
 ## 列表
 
-* [Plist图片导出工具](https://github.com/qcdong2016/gt/PlistDumper)
-* [图标生成工具](https://github.com/qcdong2016/gt/IconGen)
+* [Plist图片导出工具](/PlistDumper)
+* [图标生成工具](/IconGen)
