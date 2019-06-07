@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	plist "github.com/DHowett/go-plist"
+	"github.com/disintegration/imaging"
 )
 
 type Frame struct {
@@ -86,13 +87,7 @@ type Version struct {
 }
 
 func LoadImage(path string) (img image.Image, err error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-	img, err = png.Decode(file)
-	return
+	return imaging.Open(path)
 }
 
 func SaveImage(path string, img image.Image) (err error) {
@@ -268,24 +263,19 @@ func dumpPlist(plistFile string) {
 		w, h := v.Rect.Size().X, v.Rect.Size().Y
 		ox, oy := v.Offset.X, v.Offset.Y
 		ow, oh := v.OriginalSize.X, v.OriginalSize.Y
+		x, y := v.Rect.Min.X, v.Rect.Min.Y
 
 		if v.Rotated {
-			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, h, w)
-			subImage = RotateImage(subImage)
+			subImage = imaging.Crop(textureImage, image.Rect(x, y, x+h, y+w))
+			subImage = imaging.Rotate90(subImage)
 		} else {
-			subImage = SubImage(textureImage, v.Rect.Min.X, v.Rect.Min.Y, w, h)
+			subImage = imaging.Crop(textureImage, image.Rect(x, y, x+w, y+h))
 		}
 
-		var destRect image.Rectangle
-		destRect = image.Rect((ow-w)/2+ox, (oh-h)/2+oy, (ow-w)/2+ox+w, (oh-h)/2+oy+h)
-
-		// Create the destination sprite image [Output]
 		destImage := image.NewRGBA(image.Rect(0, 0, ow, oh))
+		newImage := imaging.Paste(destImage, subImage, image.Point{(ow-w)/2 + ox, (oh-h)/2 - oy})
 
-		// Copy image to destination sprite image
-		draw.Draw(destImage, destRect, subImage, image.Point{0, 0}, draw.Src)
-
-		SaveImage(path.Join(basename, k), destImage)
+		SaveImage(path.Join(basename, k), newImage)
 	}
 }
 
