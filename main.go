@@ -304,5 +304,6 @@ func main() {
 	}
 
 	fmt.Printf("\n")
-	fmt.Printf("https://github.com/qcdong2016/PlistDumper (Thanks for shines77)\n")
+	fmt.Printf("https://github.com/qcdong2016/PlistDumper.git\n")
+	fmt.Printf("If this tool helps you, please give me a star.\n")
 }
