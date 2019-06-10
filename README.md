@@ -49,7 +49,3 @@ $ go get github.com/DHowett/go-plist
 # preview / 预览
 
 ![preview](./preview.jpg)
-
-# Credits
-- qcdong2016
-- shines77
