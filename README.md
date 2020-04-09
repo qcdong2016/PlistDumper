@@ -1,7 +1,7 @@
 
 PlistDumper
 --------------
-
+PlistDumper 是一个拆图工具。读取plist或者json文件，导出图片。
 
 # 中文 (Chinese)
 
