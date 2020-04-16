@@ -1,34 +1,19 @@
 
-PlistDumper
---------------
-PlistDumper 是一个拆图工具。读取plist或者json文件，导出图片。
+PlistDumper 是一个拆图工具。游戏发布的时候通常会采用和图来提高游戏运行效率，PlistDumper可以根据和图的配置文件拆分出子图片，并且还原图片真实大小。
 
-# 中文 (Chinese)
-
-从 `Zwoptex` 或者 `TexturePacker` 的 `plist|json` 文件中导出图片，还原图片真实大小。支持各种版本的plist文件，和部分json文件。类似于 `TextureUnpacker`。
-
-采用 `golang` 开发，支持各种操作系统。
+* 支持TexturePacker各种版本的plist文件导出
+* 支持TexturePacker部分json文件导出
+* 支持fnt位图字体文件导出
+* `golang` 开发，跨平台，可运行在Windows、Mac、Linux。
 
 ## 使用说明
 
 ```
-$ PlistDumper [plistfile|jsonfile|targetdir]
+$ PlistDumper [plist|json|fnt|dir]
 ```
-* 第一个参数传plist文件/json文件路径，或者目录
+* 第一个参数传文件或者目录
 * 不传参数等于传当前目录
 
-# English
-
-Export the image from the `TexturePacker` or `Zwoptex`'s  `plist` file, support all version of plist, similar to `TextureUnpacker`.
-
-Developed with `golang`, and support most popular operating systems.
-
-## Usage
-
-```
-    PlistDumper [plistfile|jsonfile|targetdir]
-```
-
-# preview / 预览
+# 预览
 
 ![preview](./preview.jpg)
