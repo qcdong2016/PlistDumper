@@ -136,6 +136,8 @@ func dumpByFileName(filename string) {
 		err = dumpPlist(&c)
 	case ".json":
 		err = dumpJson(&c)
+	case ".fnt":
+		err = dumpFnt(&c)
 	default:
 		return
 	}
@@ -154,7 +156,7 @@ func doDump(path string) {
 	allfiles := []string{}
 
 	if IsDir(path) {
-		files := GetFiles(path, []string{".json", ".plist"})
+		files := GetFiles(path, []string{".json", ".plist", ".fnt"})
 		allfiles = append(allfiles, files...)
 	}
 
