@@ -1,4 +1,4 @@
-module PlistDumper
+module github.com/qcdong2016/PlistDumper
 
 go 1.12
 
