@@ -6,8 +6,12 @@ PlistDumper 是一个拆图工具。游戏发布的时候通常会采用和图�
 * 支持fnt位图字体文件导出
 * `golang` 开发，跨平台，可运行在Windows、Mac、Linux。
 
-## 使用说明
+## 安装
+* 首先安装golang环境
+* 执行 go get -u -v github.com/qcdong2016/PlistDumper
 
+
+## 使用说明
 ```
 $ PlistDumper [plist|json|fnt|dir]
 ```

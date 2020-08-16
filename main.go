@@ -24,6 +24,11 @@ func LoadImage(path string) (img image.Image, err error) {
 }
 
 func SaveImage(path string, img image.Image) (err error) {
+
+	if filepath.Ext(path) == "" {
+		path = path + ".png"
+	}
+
 	os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	imgfile, err := os.Create(path)
 	defer imgfile.Close()
