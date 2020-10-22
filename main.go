@@ -117,7 +117,12 @@ func dumpFrames(frames map[string]Frame, textureFileName, outdir string) error {
 		destImage := image.NewRGBA(image.Rect(0, 0, ow, oh))
 		newImage := imaging.Paste(destImage, subImage, image.Point{(ow-w)/2 + ox, (oh-h)/2 - oy})
 
-		SaveImage(path.Join(outdir, k), newImage)
+		savepath := path.Join(outdir, k)
+		if path.Ext(savepath) != "" {
+			savepath += ".png"
+		}
+
+		SaveImage(savepath, newImage)
 	}
 
 	return nil
