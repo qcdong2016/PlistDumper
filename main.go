@@ -118,7 +118,7 @@ func dumpFrames(frames map[string]Frame, textureFileName, outdir string) error {
 		newImage := imaging.Paste(destImage, subImage, image.Point{(ow-w)/2 + ox, (oh-h)/2 - oy})
 
 		savepath := path.Join(outdir, k)
-		if path.Ext(savepath) != "" {
+		if path.Ext(savepath) == "" {
 			savepath += ".png"
 		}
 
