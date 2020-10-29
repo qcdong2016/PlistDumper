@@ -4,6 +4,7 @@ PlistDumper 是一个拆图工具。游戏发布的时候通常会采用和图�
 * 支持TexturePacker各种版本的plist文件导出
 * 支持TexturePacker部分json文件导出
 * 支持fnt位图字体文件导出
+* 支持spine的atlas文件导出
 * `golang` 开发，跨平台，可运行在Windows、Mac、Linux。
 
 ## 安装
