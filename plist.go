@@ -3,7 +3,6 @@ package main
 import (
 	"image"
 	"image/draw"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -77,6 +76,7 @@ func intArr(str string) []int {
 
 	ret = make([]int, len(sA))
 	for i, v := range sA {
+		v = strings.TrimSpace(v)
 		value, err := strconv.ParseFloat(v, 32)
 		if err != nil {
 			value, err := strconv.ParseInt(v, 10, 32)
@@ -121,6 +121,9 @@ func dumpPlist(c *DumpContext) error {
 		return err
 	}
 
+	part := c.AppendPart()
+	part.ImageFile = version.MetaData.Texture
+
 	switch version.MetaData.Format {
 	case 0:
 		plistData := PlistV0{}
@@ -130,7 +133,7 @@ func dumpPlist(c *DumpContext) error {
 		}
 
 		for k, v := range plistData.Frames {
-			c.Frames[k] = Frame{
+			part.Frames[k] = &Frame{
 				Rect:         image.Rect(v.X, v.Y, v.X+v.Width, v.Y+v.Height),
 				OriginalSize: image.Point{v.OriginalWidth, v.OriginalHeight},
 				Offset:       image.Point{int(v.OffsetX), int(v.OffsetY)},
@@ -148,7 +151,7 @@ func dumpPlist(c *DumpContext) error {
 			f := intArr(v.Frame)
 			o := intArr(v.Offset)
 			s := intArr(v.SourceSize)
-			c.Frames[k] = Frame{
+			part.Frames[k] = &Frame{
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
@@ -166,7 +169,7 @@ func dumpPlist(c *DumpContext) error {
 			f := intArr(v.Frame)
 			o := intArr(v.Offset)
 			s := intArr(v.SourceSize)
-			c.Frames[k] = Frame{
+			part.Frames[k] = &Frame{
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
@@ -184,7 +187,7 @@ func dumpPlist(c *DumpContext) error {
 			f := intArr(v.TextureRect)
 			o := intArr(v.SpriteOffset)
 			s := intArr(v.SpriteSourceSize)
-			c.Frames[k] = Frame{
+			part.Frames[k] = &Frame{
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
@@ -192,8 +195,6 @@ func dumpPlist(c *DumpContext) error {
 			}
 		}
 	}
-
-	c.ImageFile = filepath.Join(filepath.Dir(c.FileName), version.MetaData.Texture)
 
 	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"image"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -31,6 +30,8 @@ func dumpFnt(c *DumpContext) error {
 
 	lines := strings.Split(content, "\n")
 
+	var part *AtlasPart
+
 	for _, line := range lines {
 		if line == "" {
 			continue
@@ -42,7 +43,9 @@ func dumpFnt(c *DumpContext) error {
 		case "page":
 			regPage := regexp.MustCompile(`page\s+id=0\s+file="?([^"]+)"?`)
 			match := regPage.FindStringSubmatch(line)
-			c.ImageFile = filepath.Join(filepath.Dir(c.FileName), match[1])
+
+			part = c.AppendPart()
+			part.ImageFile = match[1]
 		case "char":
 			m := parseIntMap(line[n+1:])
 			k := string(rune(m["id"]))
@@ -53,7 +56,7 @@ func dumpFnt(c *DumpContext) error {
 			}
 
 			imgname := k + ".png"
-			c.Frames[imgname] = Frame{
+			part.Frames[imgname] = &Frame{
 				Rect:         image.Rect(m["x"], m["y"], m["x"]+m["width"], m["y"]+m["height"]),
 				OriginalSize: image.Point{m["width"], m["height"]},
 				Offset:       image.Point{0, 0},

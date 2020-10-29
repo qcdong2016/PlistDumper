@@ -77,27 +77,41 @@ func GetFiles(dir string, allow []string) []string {
 	return ret
 }
 
+type AtlasPart struct {
+	ImageFile string
+	Frames    map[string]*Frame
+}
+
 type DumpContext struct {
 	FileName    string
 	FileContent []byte
-	Frames      map[string]Frame
-	ImageFile   string
+	Atlases     []*AtlasPart
 }
 
-func dumpFrames(frames map[string]Frame, textureFileName, outdir string) error {
+func (dc *DumpContext) AppendPart() *AtlasPart {
+	part := &AtlasPart{}
+	part.Frames = map[string]*Frame{}
+	dc.Atlases = append(dc.Atlases, part)
+	return part
+}
+
+func (dc *DumpContext) dumpFrames(part *AtlasPart) error {
+	textureFileName := filepath.Join(filepath.Dir(dc.FileName), part.ImageFile)
+
 	textureImage, err := LoadImage(textureFileName)
 	if err != nil {
 		return fmt.Errorf("open image error:" + textureFileName)
 	}
 
+	outdir := filepath.Join(dc.FileName + ".out")
 	if !IsDir(outdir) {
-		err = os.Mkdir(outdir, os.ModePerm)
+		err = os.MkdirAll(outdir, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
 
-	for k, v := range frames {
+	for k, v := range part.Frames {
 		fmt.Println(k)
 
 		var subImage image.Image
@@ -132,7 +146,7 @@ func dumpByFileName(filename string) {
 
 	c := DumpContext{
 		FileName: filename,
-		Frames:   map[string]Frame{},
+		Atlases:  []*AtlasPart{},
 	}
 
 	data, _ := ioutil.ReadFile(c.FileName)
@@ -148,6 +162,8 @@ func dumpByFileName(filename string) {
 		err = dumpJson(&c)
 	case ".fnt":
 		err = dumpFnt(&c)
+	case ".atlas":
+		err = dumpSpine(&c)
 	default:
 		return
 	}
@@ -156,9 +172,11 @@ func dumpByFileName(filename string) {
 		panic(err)
 	}
 
-	err = dumpFrames(c.Frames, c.ImageFile, c.FileName+".dir")
-	if err != nil {
-		panic(err)
+	for _, part := range c.Atlases {
+		err = c.dumpFrames(part)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -168,6 +186,8 @@ func doDump(path string) {
 	if IsDir(path) {
 		files := GetFiles(path, []string{".json", ".plist", ".fnt"})
 		allfiles = append(allfiles, files...)
+	} else {
+		allfiles = append(allfiles, path)
 	}
 
 	fmt.Println(fmt.Sprintf("开始导出：共（%d）个", len(allfiles)))
