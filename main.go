@@ -8,7 +8,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
+	"github.com/alexflint/go-arg"
 	"github.com/disintegration/imaging"
 )
 
@@ -180,29 +182,40 @@ func dumpByFileName(filename string) {
 	}
 }
 
-func doDump(path string) {
-	allfiles := []string{}
+func main() {
+	var args struct {
+		Input string `arg:"positional"`
+		Ext   string `arg:"-e,--ext" help:"dump ext json,plist,fnt,atlas "`
+	}
 
-	if IsDir(path) {
-		files := GetFiles(path, []string{".json", ".plist", ".fnt"})
+	arg.MustParse(&args)
+
+	var ext []string
+
+	if args.Ext == "" {
+		ext = []string{".json", ".plist", ".fnt", ".atlas"}
+	} else {
+		ext = []string{}
+		arr := strings.Split(args.Ext, ",")
+		for _, v := range arr {
+			ext = append(ext, "."+v)
+		}
+	}
+
+	fmt.Println(ext)
+
+	allfiles := []string{}
+	if IsDir(args.Input) {
+		files := GetFiles(args.Input, ext)
 		allfiles = append(allfiles, files...)
 	} else {
-		allfiles = append(allfiles, path)
+		allfiles = append(allfiles, args.Input)
 	}
 
 	fmt.Println(fmt.Sprintf("开始导出：共（%d）个", len(allfiles)))
 	for i, v := range allfiles {
 		fmt.Println(fmt.Sprintf("导出 %d/%d %s", i+1, len(allfiles), v))
 		dumpByFileName(v)
-	}
-}
-
-func main() {
-
-	if len(os.Args) == 1 {
-		doDump("./")
-	} else {
-		doDump(os.Args[1])
 	}
 
 	fmt.Printf("\n")
