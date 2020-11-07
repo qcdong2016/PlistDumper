@@ -202,6 +202,10 @@ func main() {
 		}
 	}
 
+	if args.Input == "" {
+		args.Input = "./"
+	}
+
 	fmt.Println(ext)
 
 	allfiles := []string{}
