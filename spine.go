@@ -122,7 +122,7 @@ func dumpSpine(c *DumpContext) error {
 
 			part.ImageFile = sp.Name
 			part.Frames[spf.Name] = &Frame{
-				Rotated:      ro,
+				Rotated:      ifelse(ro, 270, 0),
 				OriginalSize: image.Pt(orig[0], orig[1]),
 				Offset:       image.Pt(offset[0], offset[1]),
 				Rect:         image.Rect(xy[0], xy[1], xy[0]+size[0], xy[1]+size[1]),

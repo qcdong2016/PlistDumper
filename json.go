@@ -89,7 +89,7 @@ func dumpJson(c *DumpContext) error {
 		part.Frames[k] = &Frame{
 			Rect:         image.Rect(f.X, f.Y, f.X+f.W, f.Y+f.H),
 			OriginalSize: image.Point{s.W, s.H},
-			Rotated:      v.Rotated,
+			Rotated:      ifelse(v.Rotated, 90, 0),
 			Offset:       image.Point{-v.SpriteSourceSize.X / 2, -v.SpriteSourceSize.Y / 2}, //plist offset in center, json in left-top
 		}
 	}

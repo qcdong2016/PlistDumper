@@ -60,7 +60,6 @@ func dumpFnt(c *DumpContext) error {
 				Rect:         image.Rect(m["x"], m["y"], m["x"]+m["width"], m["y"]+m["height"]),
 				OriginalSize: image.Point{m["width"], m["height"]},
 				Offset:       image.Point{0, 0},
-				Rotated:      false,
 			}
 		}
 	}

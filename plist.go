@@ -137,7 +137,7 @@ func dumpPlist(c *DumpContext) error {
 				Rect:         image.Rect(v.X, v.Y, v.X+v.Width, v.Y+v.Height),
 				OriginalSize: image.Point{v.OriginalWidth, v.OriginalHeight},
 				Offset:       image.Point{int(v.OffsetX), int(v.OffsetY)},
-				Rotated:      false,
+				Rotated:      0,
 			}
 		}
 	case 1:
@@ -155,7 +155,7 @@ func dumpPlist(c *DumpContext) error {
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
-				Rotated:      false,
+				Rotated:      0,
 			}
 		}
 	case 2:
@@ -173,7 +173,7 @@ func dumpPlist(c *DumpContext) error {
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
-				Rotated:      v.Rotated,
+				Rotated:      ifelse(v.Rotated, 90, 0),
 			}
 		}
 	case 3:
@@ -191,7 +191,7 @@ func dumpPlist(c *DumpContext) error {
 				Rect:         image.Rect(f[0], f[1], f[2]+f[0], f[3]+f[1]),
 				OriginalSize: image.Point{s[0], s[1]},
 				Offset:       image.Point{o[0], o[1]},
-				Rotated:      v.TextureRotated,
+				Rotated:      ifelse(v.TextureRotated, 90, 0),
 			}
 		}
 	}

@@ -14,11 +14,19 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+func ifelse(c bool, a, b int) int {
+	if c {
+		return a
+	} else {
+		return b
+	}
+}
+
 type Frame struct {
 	Rect         image.Rectangle
 	Offset       image.Point
 	OriginalSize image.Point
-	Rotated      bool
+	Rotated      int
 }
 
 func LoadImage(path string) (img image.Image, err error) {
@@ -123,9 +131,12 @@ func (dc *DumpContext) dumpFrames(part *AtlasPart) error {
 		ow, oh := v.OriginalSize.X, v.OriginalSize.Y
 		x, y := v.Rect.Min.X, v.Rect.Min.Y
 
-		if v.Rotated {
+		if v.Rotated == 90 {
 			subImage = imaging.Crop(textureImage, image.Rect(x, y, x+h, y+w))
 			subImage = imaging.Rotate90(subImage)
+		} else if v.Rotated == 270 {
+			subImage = imaging.Crop(textureImage, image.Rect(x, y, x+h, y+w))
+			subImage = imaging.Rotate270(subImage)
 		} else {
 			subImage = imaging.Crop(textureImage, image.Rect(x, y, x+w, y+h))
 		}
