@@ -8,10 +8,11 @@ PlistDumper 是一个拆图工具。游戏发布的时候通常会采用和图�
 * `golang` 开发，跨平台，可运行在Windows、Mac、Linux。
 
 ## 安装
+* 从github release里下载编译好的执行程序
+
+## 从源码安装
 * 首先安装golang环境
 * 执行 go get -u -v github.com/qcdong2016/PlistDumper
-* 可以直接下载编译好的执行程序，不需要golang环境
-
 
 ## 使用说明
 ```
