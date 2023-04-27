@@ -122,7 +122,7 @@ func (dc *DumpContext) dumpFrames(part *AtlasPart) error {
 	}
 
 	for k, v := range part.Frames {
-		fmt.Println(k)
+		// fmt.Println(k)
 
 		var subImage image.Image
 
@@ -155,7 +155,7 @@ func (dc *DumpContext) dumpFrames(part *AtlasPart) error {
 	return nil
 }
 
-func dumpByFileName(filename string) {
+func dumpByFileName(filename string) error {
 
 	c := DumpContext{
 		FileName: filename,
@@ -178,19 +178,21 @@ func dumpByFileName(filename string) {
 	case ".atlas":
 		err = dumpSpine(&c)
 	default:
-		return
+		err = ErrNotSupportFileType
 	}
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	for _, part := range c.Atlases {
 		err = c.dumpFrames(part)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func main() {
@@ -217,7 +219,7 @@ func main() {
 		args.Input = "./"
 	}
 
-	fmt.Println(ext)
+	// fmt.Println(ext)
 
 	allfiles := []string{}
 	if IsDir(args.Input) {
@@ -229,8 +231,21 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("开始导出：共（%d）个", len(allfiles)))
 	for i, v := range allfiles {
-		fmt.Println(fmt.Sprintf("导出 %d/%d %s", i+1, len(allfiles), v))
-		dumpByFileName(v)
+		err := dumpByFileName(v)
+
+		p := fmt.Sprintf("%d/%d", i+1, len(allfiles))
+
+		if err != nil {
+			if err == ErrNotSupportFileType {
+
+			} else if err == ErrNotSupportJsonType {
+				fmt.Println("跳过", p, v)
+			} else {
+				fmt.Println("错误", p, v, err)
+			}
+		} else {
+			fmt.Println("导出", p, v)
+		}
 	}
 
 	fmt.Printf("\n")

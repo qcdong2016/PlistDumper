@@ -6,6 +6,11 @@ import (
 	"image"
 )
 
+var (
+	ErrNotSupportJsonType = errors.New("not support json type")
+	ErrNotSupportFileType = errors.New("not support file type")
+)
+
 type JsonSize struct {
 	W int `json:"w"`
 	H int `json:"h"`
@@ -51,6 +56,10 @@ func dumpJson(c *DumpContext) error {
 	err := json.Unmarshal(c.FileContent, &version)
 	if err != nil {
 		return err
+	}
+
+	if version.Meta == nil {
+		return ErrNotSupportJsonType
 	}
 
 	if version.Meta.Version != "1.0" {
