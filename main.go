@@ -46,7 +46,7 @@ func LoadImage(path string) (img image.Image, err error) {
 	if kind.Extension == "webp" {
 		return webp.Decode(bytes.NewReader(buf))
 	} else {
-		return imaging.Open(path)
+		return imaging.Decode(bytes.NewReader(buf))
 	}
 }
 
