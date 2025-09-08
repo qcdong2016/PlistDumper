@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/h2non/filetype"
+	"golang.org/x/image/webp"
 	"image"
 	"image/png"
 	"io/ioutil"
@@ -30,7 +33,21 @@ type Frame struct {
 }
 
 func LoadImage(path string) (img image.Image, err error) {
-	return imaging.Open(path)
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	kind, _ := filetype.Match(buf)
+	if kind == filetype.Unknown {
+		return nil, fmt.Errorf("unknown file type")
+	}
+
+	if kind.Extension == "webp" {
+		return webp.Decode(bytes.NewReader(buf))
+	} else {
+		return imaging.Open(path)
+	}
 }
 
 func SaveImage(path string, img image.Image) (err error) {
