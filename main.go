@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -41,6 +40,9 @@ func SaveImage(path string, img image.Image) (err error) {
 
 	os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	imgfile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
 	defer imgfile.Close()
 	return png.Encode(imgfile, img)
 }
@@ -64,10 +66,8 @@ func IsFile(path string) bool {
 func GetFiles(dir string, allow []string) []string {
 
 	allowMap := map[string]bool{}
-	if allow != nil {
-		for _, v := range allow {
-			allowMap[v] = true
-		}
+	for _, v := range allow {
+		allowMap[v] = true
 	}
 
 	ret := []string{}
@@ -162,10 +162,11 @@ func dumpByFileName(filename string) error {
 		Atlases:  []*AtlasPart{},
 	}
 
-	data, _ := ioutil.ReadFile(c.FileName)
+	data, err := os.ReadFile(c.FileName)
+	if err != nil {
+		return err
+	}
 	c.FileContent = data
-
-	var err error
 
 	ext := path.Ext(filename)
 	switch ext {
@@ -219,8 +220,6 @@ func main() {
 		args.Input = "./"
 	}
 
-	// fmt.Println(ext)
-
 	allfiles := []string{}
 	if IsDir(args.Input) {
 		files := GetFiles(args.Input, ext)
@@ -229,7 +228,7 @@ func main() {
 		allfiles = append(allfiles, args.Input)
 	}
 
-	fmt.Println(fmt.Sprintf("开始导出：共（%d）个", len(allfiles)))
+	fmt.Printf("开始导出：共(%d)个", len(allfiles))
 	for i, v := range allfiles {
 		err := dumpByFileName(v)
 
@@ -237,7 +236,7 @@ func main() {
 
 		if err != nil {
 			if err == ErrNotSupportFileType {
-
+				continue
 			} else if err == ErrNotSupportJsonType {
 				fmt.Println("跳过", p, v)
 			} else {
@@ -249,6 +248,5 @@ func main() {
 	}
 
 	fmt.Printf("\n")
-	fmt.Printf("好用请给个Star，谢谢.\n")
-	fmt.Printf("https://github.com/qcdong2016/PlistDumper.git\n")
+	fmt.Printf("⭐️ https://github.com/qcdong2016/PlistDumper.git\n")
 }

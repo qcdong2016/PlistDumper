@@ -67,7 +67,7 @@ func dumpSpine(c *DumpContext) error {
 				continue
 			}
 
-			if strings.Index(line, ":") == -1 {
+			if !strings.Contains(line, ":") {
 				state = statFramePart
 			}
 		}
